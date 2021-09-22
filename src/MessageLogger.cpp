@@ -10,8 +10,8 @@ using namespace std::chrono;
 _MessageLogger::_MessageLogger() {
     // Configuration defaults
     config.ts_show_ms = true;
-    config.to_cout = true;
-    config.to_file = false;
+    config_cout(true);
+    config_textFile(false, "log.txt");
 
     // Start message posting thread
     running = true;
@@ -51,6 +51,15 @@ void _MessageLogger::log_raw(string msg) {
         logFile.file << msg;
         logFile.file.close();
     }
+}
+
+void _MessageLogger::config_cout(bool use) {
+    config.to_cout = use;
+}
+
+void _MessageLogger::config_textFile(bool use, string file) {
+    config.to_file = use;
+    logFile.name = file;
 }
 
 string _MessageLogger::tpToISO(time_point<Clock_t> tp) {

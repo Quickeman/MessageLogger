@@ -55,6 +55,12 @@ public:
      * Externally accessible but also used internally. */
     void log_raw(std::string msg);
 
+    /** Configures the use of std::cout. */
+    void config_cout(bool use);
+
+    /** Configures the use of a text file. */
+    void config_textFile(bool use, std::string file);
+
 private:
     /** Clock type to use for timestamping messages. */
     typedef std::chrono::system_clock Clock_t;
@@ -85,7 +91,7 @@ private:
 
     /** Information about the message log file. */
     struct {
-        const std::string name = "log.txt";
+        std::string name;
         std::fstream file;
     } logFile;
 
