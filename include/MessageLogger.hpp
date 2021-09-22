@@ -9,6 +9,7 @@
 #include <tuple>
 #include <chrono>
 #include <fstream>
+#include <forward_list>
 
 namespace logging {
 
@@ -58,7 +59,9 @@ public:
     /** Configures the use of std::cout. */
     void config_cout(bool use);
 
-    /** Configures the use of a text file. */
+    /** Configures the use of a text file.
+     * Pass `use=false` and `file=""` (i.e. an empty string) to remove all log
+     * files from use. */
     void config_textFile(bool use, std::string file);
 
 private:
@@ -89,11 +92,17 @@ private:
     /** Clock used for timestamping. */
     Clock_t clk;
 
-    /** Information about the message log file. */
-    struct {
-        std::string name;
-        std::fstream file;
-    } logFile;
+    /** List of log files to print messages to. */
+    std::forward_list<std::string> logFileNames;
+
+    /** Default log file name. */
+    const std::string defLogFileName = "log.txt";
+
+    /** Mutex for the log file names. */
+    std::mutex lfnMutex;
+
+    /** File stream used for opening log files. */
+    std::fstream logFileStr;
 
     /** Config information. */
     struct {

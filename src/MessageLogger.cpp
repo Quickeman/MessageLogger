@@ -11,7 +11,7 @@ _MessageLogger::_MessageLogger() {
     // Configuration defaults
     config.ts_show_ms = true;
     config_cout(true);
-    config_textFile(false, "log.txt");
+    config_textFile(false, defLogFileName);
 
     // Start message posting thread
     running = true;
@@ -47,9 +47,12 @@ void _MessageLogger::log_raw(string msg) {
         cout << msg;
     }
     if (config.to_file) {
-        logFile.file.open(logFile.name, ios::app);
-        logFile.file << msg;
-        logFile.file.close();
+        lock_guard<mutex> lg(lfnMutex);
+        for (auto& fn : logFileNames) {
+            logFileStr.open(fn, ios::app);
+            logFileStr << msg;
+            logFileStr.close();
+        }
     }
 }
 
@@ -58,8 +61,13 @@ void _MessageLogger::config_cout(bool use) {
 }
 
 void _MessageLogger::config_textFile(bool use, string file) {
-    config.to_file = use;
-    logFile.name = file;
+    lock_guard<mutex> lg(lfnMutex);
+    logFileNames.remove(file);
+    if (use)
+        logFileNames.push_front(file);
+    else if (file == "")
+        logFileNames.clear();
+    config.to_file = !logFileNames.empty();
 }
 
 string _MessageLogger::tpToISO(time_point<Clock_t> tp) {
