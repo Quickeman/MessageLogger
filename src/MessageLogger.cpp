@@ -11,7 +11,7 @@ _MessageLogger::_MessageLogger() {
     // Configuration defaults
     config.ts_show_ms = true;
     config_cout(true);
-    config_textFile(false, defaultLogFileName);
+    config.to_file = false;
 
     // Start message posting thread
     running = true;
