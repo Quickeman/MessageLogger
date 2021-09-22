@@ -30,3 +30,24 @@
 *.exe
 *.out
 *.app
+
+bin/
+*/bin/
+
+# CMake
+*.cmake
+CMakeCache.txt
+CMakeFiles/
+Makefile
+
+# Compile commands
+compile_commands.json
+
+# Unit testing
+Testing/
+
+# VS Code
+.vscode/
+
+# MacOS
+*.DS_Store
