@@ -8,11 +8,18 @@ using namespace logging;
 using namespace std;
 
 int main() {
-    array<string, 2> logFileNames;
+    constexpr int numFiles = 3;
+    array<string, numFiles> logFileNames;
     fstream lf;
     int i;
     string iStr;
-    for (i = 0; i < 2; i++) {
+
+    logger.config_textFile(true, defaultLogFileName);
+    lf.open(defaultLogFileName, ios::out | ios::trunc);
+    test::check(lf.good(), "File clearing stream not good.");
+    lf.close();
+
+    for (i = 0; i < numFiles; i++) {
         iStr = to_string(i + 1);
         logFileNames[i] = "testlog" + iStr + ".txt";
 
@@ -34,21 +41,24 @@ int main() {
         this_thread::sleep_for(chrono::milliseconds(20));
         
         // Make sure to remove this log file once it's no longer needed
-        logger.config_textFile(false, logFileNames[i]);
+        if (i == (numFiles - 2))
+            logger.config_textFile(false, "");
+        else
+            logger.config_textFile(false, logFileNames[i]);
     }
 
     // Test the contents of the two log files
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < numFiles; i++) {
         iStr = to_string(i + 1);
         string fileContents;
-        fileContents.resize(1000);
+        fileContents.resize(200 * numFiles);
 
         lf.open(logFileNames[i], ios::in);
         test::check(lf.good(), "Retrieving file contents, fstream not good.");
-        lf.read(const_cast<char*>(fileContents.data()), 1000);
+        lf.read(const_cast<char*>(fileContents.data()), 200 * numFiles);
         test::check(!fileContents.empty(), "Log file " + iStr + " empty.");
         lf.close();
-        
+
         int nlCount = 0;
         for (auto& c : fileContents)
             if (c == '\n')

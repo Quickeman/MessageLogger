@@ -13,6 +13,8 @@
 
 namespace logging {
 
+extern const std::string defaultLogFileName;
+
 /** Message logging class for tracking info and error messages. */
 class _MessageLogger {
 public:
@@ -94,9 +96,6 @@ private:
 
     /** List of log files to print messages to. */
     std::forward_list<std::string> logFileNames;
-
-    /** Default log file name. */
-    const std::string defLogFileName = "log.txt";
 
     /** Mutex for the log file names. */
     std::mutex lfnMutex;

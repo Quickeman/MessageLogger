@@ -11,7 +11,7 @@ _MessageLogger::_MessageLogger() {
     // Configuration defaults
     config.ts_show_ms = true;
     config_cout(true);
-    config_textFile(false, defLogFileName);
+    config_textFile(false, defaultLogFileName);
 
     // Start message posting thread
     running = true;
@@ -118,3 +118,6 @@ void _MessageLogger::run() {
 
 // Define externally-linked logger object
 _MessageLogger logging::logger;
+
+// Define externally linked default log file name
+const string logging::defaultLogFileName = "log.txt";
