@@ -35,9 +35,9 @@ public:
     _MessageLogger& operator=(const _MessageLogger&) = delete;
 
     /** Move constructor. */
-    _MessageLogger(_MessageLogger&& td);
+    _MessageLogger(_MessageLogger&& ml);
     /** Move assignment operator. */
-    _MessageLogger& operator=(_MessageLogger&& td);
+    _MessageLogger& operator=(_MessageLogger&& ml);
 
     /** Destructor. */
     ~_MessageLogger();
