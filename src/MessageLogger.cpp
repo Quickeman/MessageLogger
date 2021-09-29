@@ -49,9 +49,9 @@ void _MessageLogger::log_raw(string msg) {
     if (config.to_file) {
         lock_guard<mutex> lg(lfnMutex);
         for (auto& fn : logFileNames) {
-            logFileStr.open(fn, ios::app);
-            logFileStr << msg;
-            logFileStr.close();
+            fstream fs(fn, ios::app);
+            fs << msg;
+            fs.close();
         }
     }
 }

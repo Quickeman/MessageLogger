@@ -100,9 +100,6 @@ private:
     /** Mutex for the log file names. */
     std::mutex lfnMutex;
 
-    /** File stream used for opening log files. */
-    std::fstream logFileStr;
-
     /** Config information. */
     struct {
         /** Whether to include milliseconds in message timestamps. */

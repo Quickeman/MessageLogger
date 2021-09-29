@@ -10,12 +10,11 @@ using namespace std;
 int main() {
     constexpr int numFiles = 3;
     array<string, numFiles> logFileNames;
-    fstream lf;
     int i;
     string iStr;
 
     logger.config_textFile(true, defaultLogFileName);
-    lf.open(defaultLogFileName, ios::out | ios::trunc);
+    fstream lf(defaultLogFileName, ios::out | ios::trunc);
     test::check(lf.good(), "File clearing stream not good.");
     lf.close();
 
@@ -24,9 +23,9 @@ int main() {
         logFileNames[i] = "testlog" + iStr + ".txt";
 
         // Clear the log file to avoid confusion
-        lf.open(logFileNames[i], ios::out | ios::trunc);
-        test::check(lf.good(), "File clearing stream not good.");
-        lf.close();
+        fstream fs(logFileNames[i], ios::out | ios::trunc);
+        test::check(fs.good(), "File clearing stream not good.");
+        fs.close();
 
         // Configure logger
         logger.config_cout(false);
@@ -53,11 +52,11 @@ int main() {
         string fileContents;
         fileContents.resize(200 * numFiles);
 
-        lf.open(logFileNames[i], ios::in);
-        test::check(lf.good(), "Retrieving file contents, fstream not good.");
-        lf.read(const_cast<char*>(fileContents.data()), 200 * numFiles);
+        fstream fs(logFileNames[i], ios::in);
+        test::check(fs.good(), "Retrieving file contents, fstream not good.");
+        fs.read(const_cast<char*>(fileContents.data()), 200 * numFiles);
         test::check(!fileContents.empty(), "Log file " + iStr + " empty.");
-        lf.close();
+        fs.close();
 
         int nlCount = 0;
         for (auto& c : fileContents)
