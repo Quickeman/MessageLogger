@@ -71,11 +71,11 @@ void _MessageLogger::config_textFile(bool use, string file) {
 }
 
 string _MessageLogger::tpToISO(time_point<Clock_t> tp) {
-    const auto tt = clk.to_time_t(tp);
-    string out = "YYYY-MM-DD HH:MM:SS";
+    const auto tt { clk.to_time_t(tp) };
+    string out { "YYYY-MM-DD HH:MM:SS" };
     strftime(const_cast<char*>(out.data()), out.size(), "%Y-%m-%d %H:%M:%S", localtime(&tt));
     if (config.ts_show_ms) {
-        auto ms = duration_cast<milliseconds>(tp.time_since_epoch());
+        auto ms { duration_cast<milliseconds>(tp.time_since_epoch()) };
         ms -= duration_cast<seconds>(tp.time_since_epoch());
         out.push_back('.');
         if (ms.count() < 100)
@@ -90,16 +90,17 @@ string _MessageLogger::tpToISO(time_point<Clock_t> tp) {
 }
 
 void _MessageLogger::run() {
-    const array<string, _NumMessageTypes> typeStr = {
+    const array<string, _NumMessageTypes> typeStr {
         "[INFO]",
         "[WARNING]",
         "[ERROR]"
     };
+    
     while (running) {
         if (!msgQueue.empty()) {
             // Format string as desired
-            auto& msg = msgQueue.front();
-            string out = tpToISO(get<time_point<Clock_t>>(msg));
+            auto& msg { msgQueue.front() };
+            string out { tpToISO(get<time_point<Clock_t>>(msg)) };
             out.push_back(' ');
             out.append(typeStr[get<MessageLabel>(msg)]);
             out.push_back(' ');
@@ -120,4 +121,4 @@ void _MessageLogger::run() {
 _MessageLogger logging::logger;
 
 // Define externally linked default log file name
-const string logging::defaultLogFileName = "log.txt";
+const string logging::defaultLogFileName { "log.txt" };
