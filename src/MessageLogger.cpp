@@ -70,7 +70,7 @@ void _MessageLogger::config_textFile(bool use, string file) {
     config.to_file = !logFileNames.empty();
 }
 
-string _MessageLogger::tpToISO(time_point<Clock_t> tp) {
+string _MessageLogger::tpToISO(time_point<Clock_t> tp) const {
     const auto tt { clk.to_time_t(tp) };
     string out { "YYYY-MM-DD HH:MM:SS" };
     strftime(const_cast<char*>(out.data()), out.size(), "%Y-%m-%d %H:%M:%S", localtime(&tt));

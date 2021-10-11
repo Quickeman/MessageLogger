@@ -74,7 +74,7 @@ private:
     typedef std::tuple<std::chrono::time_point<Clock_t>, MessageLabel, std::string> message_t;
 
     /** Converts a time point to an ISO timestamp. */
-    std::string tpToISO(std::chrono::time_point<Clock_t> tp);
+    std::string tpToISO(std::chrono::time_point<Clock_t> tp) const;
 
     /** Method to use for thread execution. */
     void run();
