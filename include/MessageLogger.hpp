@@ -66,6 +66,12 @@ public:
      * files from use. */
     void config_textFile(bool use, std::string file);
 
+    /** Sets the logging period.
+     * To prevent CPU choking, the messages given to the various methods are
+     * only sent to output according to a kind of clock. This method sets the
+     * period for the messages to be sent to output. */
+    void set_period(unsigned int period);
+
 private:
     /** Clock type to use for timestamping messages. */
     typedef std::chrono::system_clock Clock_t;
@@ -109,6 +115,9 @@ private:
         /** Whether to print messages to the log text file. */
         std::atomic_bool to_file;
     } config;
+
+    /** Time between messages in buffer being sent to output in milliseconds. */
+    std::atomic_uint logPeriod;
 };
 
 extern _MessageLogger logger;

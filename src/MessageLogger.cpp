@@ -8,6 +8,9 @@ using namespace std;
 using namespace std::chrono;
 
 _MessageLogger::_MessageLogger() {
+    // Default logging period
+    logPeriod = 100;
+
     // Configuration defaults
     config.ts_show_ms = true;
     config_cout(true);
@@ -70,6 +73,10 @@ void _MessageLogger::config_textFile(bool use, string file) {
     config.to_file = !logFileNames.empty();
 }
 
+void _MessageLogger::set_period(unsigned int p) {
+    logPeriod = p;
+}
+
 string _MessageLogger::tpToISO(time_point<Clock_t> tp) const {
     const auto tt { clk.to_time_t(tp) };
     string out { "YYYY-MM-DD HH:MM:SS" };
@@ -97,10 +104,10 @@ void _MessageLogger::run() {
     };
     
     while (running) {
-        if (!msgQueue.empty()) {
+        while (!msgQueue.empty()) {
             // Format string as desired
-            auto& msg { msgQueue.front() };
-            string out { tpToISO(get<time_point<Clock_t>>(msg)) };
+            auto& msg {msgQueue.front()};
+            string out {tpToISO(get<time_point<Clock_t>>(msg))};
             out.push_back(' ');
             out.append(typeStr[get<MessageLabel>(msg)]);
             out.push_back(' ');
@@ -113,6 +120,8 @@ void _MessageLogger::run() {
             lock_guard<mutex> lg(msgMutex);
             msgQueue.pop();
         }
+
+        this_thread::sleep_for(chrono::milliseconds(logPeriod.load()));
     }
 }
 
