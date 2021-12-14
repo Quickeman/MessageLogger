@@ -66,7 +66,7 @@ public:
      * files from use. */
     void config_textFile(bool use, std::string file);
 
-    /** Sets the logging period.
+    /** Sets the logging period in milliseconds.
      * To prevent CPU choking, the messages given to the various methods are
      * only sent to output according to a kind of clock. This method sets the
      * period for the messages to be sent to output. */

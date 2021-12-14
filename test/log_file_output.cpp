@@ -8,6 +8,8 @@ using namespace logging;
 using namespace std;
 
 int main() {
+    logger.set_period(100);
+
     constexpr int numFiles = 3;
     array<string, numFiles> logFileNames;
     int i;
@@ -37,7 +39,7 @@ int main() {
         logger.error("This is a log file error message.");
 
         // Wait so the messages have time to get printed
-        this_thread::sleep_for(chrono::milliseconds(20));
+        this_thread::sleep_for(chrono::milliseconds(200));
         
         // Make sure to remove this log file once it's no longer needed
         if (i == (numFiles - 2))
