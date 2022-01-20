@@ -40,12 +40,12 @@ _MessageLogger::~_MessageLogger() {
         msgThread.join();
 }
 
-void _MessageLogger::log(string msg, MessageLabel tp) {
+void _MessageLogger::log(const string& msg, MessageLabel tp) {
     lock_guard<mutex> lg(msgMutex);
     msgQueue.push(make_tuple(clk.now(), tp, msg));
 }
 
-void _MessageLogger::log_raw(string msg) {
+void _MessageLogger::log_raw(const string& msg) const {
     if (config.to_cout) {
         cout << msg;
     }
@@ -63,7 +63,7 @@ void _MessageLogger::config_cout(bool use) {
     config.to_cout = use;
 }
 
-void _MessageLogger::config_textFile(bool use, string file) {
+void _MessageLogger::config_textFile(bool use, const string& file) {
     lock_guard<mutex> lg(lfnMutex);
     logFileNames.remove(file);
     if (use)

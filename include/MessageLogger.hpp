@@ -43,20 +43,26 @@ public:
     ~_MessageLogger();
 
     /** Logs messages. */
-    void log(std::string msg, MessageLabel tp);
+    void log(const std::string& msg, MessageLabel tp);
 
     /** Logs information messages. */
-    inline void info(std::string msg) { log(msg, InfoMessage); }
+    inline void info(const std::string& msg) {
+        log(msg, InfoMessage);
+    }
 
     /** Logs warning messages. */
-    inline void warn(std::string msg) { log(msg, WarningMessage); }
+    inline void warn(const std::string& msg) {
+        log(msg, WarningMessage);
+    }
 
     /** Logs error messages. */
-    inline void error(std::string msg) { log(msg, ErrorMessage); }
+    inline void error(const std::string& msg) {
+        log(msg, ErrorMessage);
+    }
 
     /** Logs the raw string to the (potentially various) output(s).
      * Externally accessible but also used internally. */
-    void log_raw(std::string msg);
+    void log_raw(const std::string& msg) const;
 
     /** Configures the use of std::cout. */
     void config_cout(bool use);
@@ -64,7 +70,7 @@ public:
     /** Configures the use of a text file.
      * Pass `use=false` and `file=""` (i.e. an empty string) to remove all log
      * files from use. */
-    void config_textFile(bool use, std::string file);
+    void config_textFile(bool use, const std::string& file);
 
     /** Sets the logging period in milliseconds.
      * To prevent CPU choking, the messages given to the various methods are
@@ -104,7 +110,7 @@ private:
     std::forward_list<std::string> logFileNames;
 
     /** Mutex for the log file names. */
-    std::mutex lfnMutex;
+    mutable std::mutex lfnMutex;
 
     /** Config information. */
     struct {
