@@ -1,10 +1,8 @@
 #ifndef MESSAGE_LOGGER_H
 #define MESSAGE_LOGGER_H
 
-#include <thread>
 #include <mutex>
 #include <atomic>
-#include <queue>
 #include <string>
 #include <tuple>
 #include <chrono>
@@ -31,19 +29,18 @@ public:
 
     /** Disable copy constructor. */
     _MessageLogger(const _MessageLogger&) = delete;
+    /** Disable move constructor. */
+    _MessageLogger(_MessageLogger&& ml) = delete;
     /** Disable copy assignment operator. */
     _MessageLogger& operator=(const _MessageLogger&) = delete;
+    /** Disable move assignment operator. */
+    _MessageLogger& operator=(_MessageLogger&& ml) = delete;
 
-    /** Move constructor. */
-    _MessageLogger(_MessageLogger&& ml);
-    /** Move assignment operator. */
-    _MessageLogger& operator=(_MessageLogger&& ml);
-
-    /** Destructor. */
-    ~_MessageLogger();
+    /** Default destructor. */
+    ~_MessageLogger() = default;
 
     /** Logs messages. */
-    void log(const std::string& msg, MessageLabel tp);
+    void log(const std::string& msg, MessageLabel ml);
 
     /** Logs information messages. */
     inline void info(const std::string& msg) {
@@ -72,12 +69,6 @@ public:
      * files from use. */
     void config_textFile(bool use, const std::string& file);
 
-    /** Sets the logging period in milliseconds.
-     * To prevent CPU choking, the messages given to the various methods are
-     * only sent to output according to a kind of clock. This method sets the
-     * period for the messages to be sent to output. */
-    void set_period(unsigned int period);
-
 private:
     /** Clock type to use for timestamping messages. */
     typedef std::chrono::system_clock Clock_t;
@@ -85,32 +76,13 @@ private:
     /** Message data to be added to the message queue. */
     typedef std::tuple<std::chrono::time_point<Clock_t>, MessageLabel, std::string> message_t;
 
+    void log_internal(message_t msg);
+
     /** Converts a time point to an ISO timestamp. */
     std::string tpToISO(std::chrono::time_point<Clock_t> tp) const;
 
-    /** Method to use for thread execution. */
-    void run();
-
-    /** Thread for logging to keep overhead out of time-critical branches. */
-    std::thread msgThread;
-
-    /** Container for messages to log. */
-    std::queue<std::tuple<std::chrono::time_point<Clock_t>, MessageLabel, std::string>> msgQueue;
-
-    /** Mutex for the message queue to prevent data races. */
-    std::mutex msgMutex;
-
-    /** 'Running' flag for controlling thread execution. */
-    std::atomic_bool running;
-
     /** Clock used for timestamping. */
     Clock_t clk;
-
-    /** List of log files to print messages to. */
-    std::forward_list<std::string> logFileNames;
-
-    /** Mutex for the log file names. */
-    mutable std::mutex lfnMutex;
 
     /** Config information. */
     struct {
@@ -118,12 +90,12 @@ private:
         std::atomic_bool ts_show_ms;
         /** Whether to print messages to std::cout. */
         std::atomic_bool to_cout;
-        /** Whether to print messages to the log text file. */
-        std::atomic_bool to_file;
+        /** List of log files to print messages to. */
+        std::forward_list<std::string> log_files;
     } config;
 
-    /** Time between messages in buffer being sent to output in milliseconds. */
-    std::atomic_uint logPeriod;
+    /** Mutex for the log file names. */
+    mutable std::mutex lfnMutex;
 };
 
 extern _MessageLogger logger;

@@ -2,79 +2,76 @@
 
 #include <array>
 #include <iostream>
+#include <thread>
 
 using namespace logging;
 using namespace std;
 using namespace std::chrono;
 
 _MessageLogger::_MessageLogger() {
-    // Default logging period
-    logPeriod = 100;
-
     // Configuration defaults
     config.ts_show_ms = true;
     config_cout(true);
-    config.to_file = false;
-
-    // Start message posting thread
-    running = true;
-    msgThread = thread([this](){ this->run(); });
+    // Don't log to any files by default
+    config.log_files.clear();
 }
 
-_MessageLogger::_MessageLogger(_MessageLogger&& ml):
-msgThread(move(ml.msgThread)) {
-    running = false;
-}
-
-_MessageLogger& _MessageLogger::operator=(_MessageLogger&& ml) {
-    running = false;
-    if (msgThread.joinable())
-        msgThread.join();
-    msgThread = move(ml.msgThread);
-    return *this;
-}
-
-_MessageLogger::~_MessageLogger() {
-    running = false;
-    if (msgThread.joinable())
-        msgThread.join();
-}
-
-void _MessageLogger::log(const string& msg, MessageLabel tp) {
-    lock_guard<mutex> lg(msgMutex);
-    msgQueue.push(make_tuple(clk.now(), tp, msg));
+void _MessageLogger::log(const string& msg, MessageLabel ml) {
+    std::thread t([this, msg, ml](){
+        this->log_internal(std::make_tuple(clk.now(), ml, msg));
+    });
+    t.detach();
 }
 
 void _MessageLogger::log_raw(const string& msg) const {
     if (config.to_cout) {
-        cout << msg;
+        std::cout << msg;
     }
-    if (config.to_file) {
-        lock_guard<mutex> lg(lfnMutex);
-        for (const auto& fn : logFileNames) {
-            fstream fs(fn, ios::app);
-            fs << msg;
-            fs.close();
-        }
+    lock_guard<mutex> lg(lfnMutex);
+    for (const auto& fn : config.log_files) {
+        std::fstream fs(fn, ios::app);
+        fs << msg;
     }
 }
 
 void _MessageLogger::config_cout(bool use) {
-    config.to_cout = use;
+    config.to_cout.store(use);
 }
 
 void _MessageLogger::config_textFile(bool use, const string& file) {
     lock_guard<mutex> lg(lfnMutex);
-    logFileNames.remove(file);
+    config.log_files.remove(file);
     if (use)
-        logFileNames.push_front(file);
+        config.log_files.push_front(file);
     else if (file == "")
-        logFileNames.clear();
-    config.to_file = !logFileNames.empty();
+        config.log_files.clear();
 }
 
-void _MessageLogger::set_period(unsigned int p) {
-    logPeriod = p;
+void _MessageLogger::log_internal(message_t msg) {
+    const std::array<std::string, _NumMessageTypes> typeStr {
+        "[INFO]",
+        "[WARNING]",
+        "[ERROR]"
+    };
+
+    try
+    {
+        std::string out {tpToISO(std::get<time_point<Clock_t>>(msg))};
+        out.push_back(' ');
+        out.append(typeStr[std::get<MessageLabel>(msg)]);
+        out.push_back(' ');
+        out.append(std::get<std::string>(msg));
+        if (out.back() != '\n')
+            out.push_back('\n');
+        
+        log_raw(out);
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << "Failed to log message with error: " << e.what() << '\n';
+    }
+    
+    
 }
 
 string _MessageLogger::tpToISO(time_point<Clock_t> tp) const {
@@ -89,40 +86,9 @@ string _MessageLogger::tpToISO(time_point<Clock_t> tp) const {
             out.push_back('0');
         if (ms.count() < 10)
             out.push_back('0');
-        if (ms.count() == 0)
-            out.push_back('0');
         out.append(to_string(ms.count()));
     }
     return out;
-}
-
-void _MessageLogger::run() {
-    const array<string, _NumMessageTypes> typeStr {
-        "[INFO]",
-        "[WARNING]",
-        "[ERROR]"
-    };
-    
-    while (running) {
-        while (!msgQueue.empty()) {
-            // Format string as desired
-            auto& msg {msgQueue.front()};
-            string out {tpToISO(get<time_point<Clock_t>>(msg))};
-            out.push_back(' ');
-            out.append(typeStr[get<MessageLabel>(msg)]);
-            out.push_back(' ');
-            out.append(get<string>(msg));
-            if (out.back() != '\n')
-                out.push_back('\n');
-
-            log_raw(out);
-
-            lock_guard<mutex> lg(msgMutex);
-            msgQueue.pop();
-        }
-
-        this_thread::sleep_for(chrono::milliseconds(logPeriod.load()));
-    }
 }
 
 

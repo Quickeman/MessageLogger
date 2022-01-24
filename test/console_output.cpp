@@ -2,6 +2,8 @@
 
 #include "unit_test_framework.h"
 
+#include <thread>
+
 using namespace std;
 using namespace logging;
 
