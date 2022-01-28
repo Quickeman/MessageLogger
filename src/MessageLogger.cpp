@@ -10,6 +10,7 @@ using namespace std::chrono;
 
 _MessageLogger::_MessageLogger() {
     // Configuration defaults
+    config.ts_show_date = false;
     config.ts_show_ms = true;
     config_cout(true);
     // Don't log to any files by default
@@ -47,6 +48,11 @@ void _MessageLogger::config_textFile(bool use, const string& file) {
         config.log_files.clear();
 }
 
+void _MessageLogger::config_timestamp(bool d, bool ms) {
+    config.ts_show_date = d;
+    config.ts_show_ms = ms;
+}
+
 void _MessageLogger::log_internal(message_t msg) {
     const std::array<std::string, _NumMessageTypes> typeStr {
         "[INFO]",
@@ -76,8 +82,18 @@ void _MessageLogger::log_internal(message_t msg) {
 
 string _MessageLogger::tpToISO(time_point<Clock_t> tp) const {
     const auto tt { clk.to_time_t(tp) };
-    string out { "YYYY-MM-DD HH:MM:SS" };
-    strftime(const_cast<char*>(out.data()), out.size(), "%Y-%m-%d %H:%M:%S", localtime(&tt));
+    
+    string out {""};
+    string frmt {""};
+    if (config.ts_show_date) {
+        out.append("YYYY-MM-DD ");
+        frmt.append("%Y-%m-%d ");
+    }
+    out.append("HH:MM:SS");
+    frmt.append("%H:%M:%S");
+
+    strftime(const_cast<char*>(out.data()), out.size(), frmt.c_str(), localtime(&tt));
+
     if (config.ts_show_ms) {
         auto ms { duration_cast<milliseconds>(tp.time_since_epoch()) };
         ms -= duration_cast<seconds>(tp.time_since_epoch());
@@ -88,6 +104,7 @@ string _MessageLogger::tpToISO(time_point<Clock_t> tp) const {
             out.push_back('0');
         out.append(to_string(ms.count()));
     }
+
     return out;
 }
 

@@ -69,6 +69,11 @@ public:
      * files from use. */
     void config_textFile(bool use, const std::string& file);
 
+    /** Configures the timestamp appearance in logged messages.
+     * @param show_date whether to show the date.
+     * @param show_ms whther to include milliseconds in the timestamp. */
+    void config_timestamp(bool show_date, bool show_ms);
+
 private:
     /** Clock type to use for timestamping messages. */
     typedef std::chrono::system_clock Clock_t;
@@ -86,6 +91,8 @@ private:
 
     /** Config information. */
     struct {
+        /** Whether to include the date in message timestamps. */
+        std::atomic_bool ts_show_date;
         /** Whether to include milliseconds in message timestamps. */
         std::atomic_bool ts_show_ms;
         /** Whether to print messages to std::cout. */
