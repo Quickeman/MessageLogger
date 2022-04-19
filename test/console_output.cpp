@@ -10,7 +10,7 @@ using namespace logging;
 int main() {
     // Configure logger
     logger.config_cout(true);
-    logger.config_textFile(false, "testlog.txt");
+    logger.config_textFile(false);
 
     test::check(cout.good(), "Before logging, cout not good.");
 

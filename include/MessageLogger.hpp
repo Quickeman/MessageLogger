@@ -1,13 +1,11 @@
 #ifndef MESSAGE_LOGGER_H
 #define MESSAGE_LOGGER_H
 
-#include <mutex>
-#include <atomic>
 #include <string>
 #include <tuple>
 #include <chrono>
 #include <fstream>
-#include <forward_list>
+#include <array>
 
 namespace logging {
 
@@ -40,20 +38,20 @@ public:
     ~_MessageLogger() = default;
 
     /** Logs messages. */
-    void log(const std::string& msg, MessageLabel ml);
+    void log(const std::string& msg, MessageLabel ml) const;
 
     /** Logs information messages. */
-    inline void info(const std::string& msg) {
+    inline void info(const std::string& msg) const {
         log(msg, InfoMessage);
     }
 
     /** Logs warning messages. */
-    inline void warn(const std::string& msg) {
+    inline void warn(const std::string& msg) const {
         log(msg, WarningMessage);
     }
 
     /** Logs error messages. */
-    inline void error(const std::string& msg) {
+    inline void error(const std::string& msg) const {
         log(msg, ErrorMessage);
     }
 
@@ -65,9 +63,13 @@ public:
     void config_cout(bool use);
 
     /** Configures the use of a text file.
-     * Pass `use=false` and `file=""` (i.e. an empty string) to remove all log
-     * files from use. */
-    void config_textFile(bool use, const std::string& file);
+     * The name of the file can be configured with @ref config_textfile(std::string) */
+    void config_textFile(bool use);
+
+    /** Renames the text file used for logging messages to.
+     * @note Calling this method enables text-file logging regardless of previous
+     * calls to @ref config_textfile(bool) */
+    void config_textFile(const std::string& name);
 
     /** Configures the timestamp appearance in logged messages.
      * @param show_date whether to show the date.
@@ -81,7 +83,7 @@ private:
     /** Message data to be added to the message queue. */
     typedef std::tuple<std::chrono::time_point<Clock_t>, MessageLabel, std::string> message_t;
 
-    void log_internal(message_t msg);
+    void log_internal(message_t msg) const;
 
     /** Converts a time point to an ISO timestamp. */
     std::string tpToISO(std::chrono::time_point<Clock_t> tp) const;
@@ -89,20 +91,21 @@ private:
     /** Clock used for timestamping. */
     Clock_t clk;
 
+    const std::array<std::string, _NumMessageTypes> msgTypeStr;
+
     /** Config information. */
     struct {
         /** Whether to include the date in message timestamps. */
-        std::atomic_bool ts_show_date;
+        bool ts_show_date;
         /** Whether to include milliseconds in message timestamps. */
-        std::atomic_bool ts_show_ms;
+        bool ts_show_ms;
         /** Whether to print messages to std::cout. */
-        std::atomic_bool to_cout;
-        /** List of log files to print messages to. */
-        std::forward_list<std::string> log_files;
+        bool to_cout;
+        /** Whether to print messages to a log file. */
+        bool to_file;
+        /** Log file name to print messages to. */
+        std::string log_file;
     } config;
-
-    /** Mutex for the log file names. */
-    mutable std::mutex lfnMutex;
 };
 
 extern _MessageLogger logger;
